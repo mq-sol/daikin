@@ -1,0 +1,7 @@
+<?php
+//下記を登録してConfig.phpにリネームすること
+$client_id = "";
+$client_secret = "";
+$username = "";
+$password = "";
+?>
