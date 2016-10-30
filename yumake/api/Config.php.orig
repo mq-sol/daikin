@@ -1,0 +1,4 @@
+<?php
+//Config.phpにリネームして使うこと
+$api_key="";
+?>

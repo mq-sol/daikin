@@ -1,0 +1,268 @@
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title>daikin hackathon</title>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.19/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.19/themes/redmond/jquery-ui.css">
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.19/i18n/jquery-ui-i18n.min.js"></script>
+
+ </head>
+ <body>
+  daikin hackathon
+  <hr>
+  <form class="ui-widget">
+    <select name="iot_id" id="iot_id" onChange="selectIot()">
+        <option value="1">エアコン</option>
+        <option value="2">HUE</option>
+    </select><br><br>
+    <hr>
+    <div class="iot01">
+        <label>プリセット</label>
+            <input type="radio" name="preset" onchange="setPreset(1)" value="1">ベタベタ
+            <input type="radio" name="preset" onchange="setPreset(2)" value="2">てかてか
+            <input type="radio" name="preset" onchange="setPreset(3)" value="3">キラキラ<br>
+        <hr>
+        <label>制御エアコン</label><input size="4" type="text" name="id" value="70"><br><br>
+        <label>運転・停止</label>
+            <input type="radio" name="power" value="0">停止
+            <input type="radio" name="power" value="1">運転<br><br>
+        <label>運転モード</label>
+            <input type="radio" name="operation_mode" value="1">送風
+            <input type="radio" name="operation_mode" value="2">暖房
+            <input type="radio" name="operation_mode" value="4">冷房<br><br>
+        <label style="float:left">設定温度</label>
+            <input type="text" size="4" name="set_temperature" style="float:left">
+            <div id="sld_set_temperature" style="float:left; width:300px;"></div><br><br>
+        <label>風量</label>
+            <input type="radio" name="fan_speed" value="1">弱
+            <input type="radio" name="fan_speed" value="2">中
+            <input type="radio" name="fan_speed" value="3">強<br><br>
+        <label>風向</label>
+            <input type="radio" name="fan_direction" value="1">１
+            <input type="radio" name="fan_direction" value="2">２
+            <input type="radio" name="fan_direction" value="3">３
+            <input type="radio" name="fan_direction" value="4">４
+            <input type="radio" name="fan_direction" value="7">スイング<br><br>
+    </div>
+    <div class="iot02" style="display:none">
+        <label>電源</label>
+            <input type="radio" name="hue_power" value="1">on
+            <input type="radio" name="hue_power" value="0">off<br><br>
+        <label style="float:left">明るさ(明度)<label>
+            <input type="text" size="4" name="hue_bri" style="float:left">
+            <div id="sld_hue_bri" style="float:left; width:300px;"></div><br><br style="clear:both">
+        <label style="float:left">鮮やかさ(彩度)<label>
+            <input type="text" size="4" name="hue_sat" style="float:left">
+            <div id="sld_hue_sat" style="float:left; width:300px;"></div><br><br style="clear:both">
+        <label style="float:left">色相<label>
+            <input type="text" size="10" name="hue_hue" style="float:left">
+            <div id="sld_hue_hue" style="float:left; width:300px;"></div><br><br style="clear:both"><br>
+        <div id="color" style="width: 500px;height:30px; border: black 1px solid"></div>
+    </div>
+    <div>
+    <button class="btn" type="button" onclick="btn_send()">送信</button>
+    </div>
+  </form>
+  <script>
+    (function(){
+        $('#sld_set_temperature').slider({
+            min: 15,
+            max: 35,
+            step: 1,
+            value: 25,
+            // 3スライダーの変化時にテキストボックスの値表示を更新
+            change: function(e, ui) {
+                $('input[name=set_temperature]').val(ui.value);
+            },
+            // 4スライダーの初期化時に、その値をテキストボックスにも反映
+            create: function(e, ui) {
+                $('input[name=set_temperature]').val(
+                    $(this).slider('option', 'value'));
+            }
+        });
+        $('#sld_hue_bri').slider({
+            min: 0,
+            max: 255,
+            step: 1,
+            value: 128,
+            // 3スライダーの変化時にテキストボックスの値表示を更新
+            change: function(e, ui) {
+                $('input[name=hue_bri]').val(ui.value);
+                changeColor();
+            },
+            // 4スライダーの初期化時に、その値をテキストボックスにも反映
+            create: function(e, ui) {
+                $('input[name=hue_bri').val(
+                    $(this).slider('option', 'value'));
+            }
+        });
+        $('#sld_hue_sat').slider({
+            min: 0,
+            max: 255,
+            step: 1,
+            value: 128,
+            // 3スライダーの変化時にテキストボックスの値表示を更新
+            change: function(e, ui) {
+                $('input[name=hue_sat]').val(ui.value);
+                changeColor();
+            },
+            // 4スライダーの初期化時に、その値をテキストボックスにも反映
+            create: function(e, ui) {
+                $('input[name=hue_sat]').val(
+                    $(this).slider('option', 'value'));
+            }
+        });
+        $('#sld_hue_hue').slider({
+            min: 0,
+            max: 65535,
+            step: 1,
+            value: 128,
+            // 3スライダーの変化時にテキストボックスの値表示を更新
+            change: function(e, ui) {
+                $('input[name=hue_hue]').val(ui.value);
+                changeColor();
+            },
+            // 4スライダーの初期化時に、その値をテキストボックスにも反映
+            create: function(e, ui) {
+                $('input[name=hue_hue]').val(
+                    $(this).slider('option', 'value'));
+            }
+        });
+    })();
+    function selectIot(){
+        if ($("#iot_id").val() == "1"){
+            $(".iot01").show();
+            $(".iot02").hide();
+        }else{
+            $(".iot01").hide();
+            $(".iot02").show();
+        }
+    }
+
+    function changeColor(){
+        var bri = $("input[name=hue_bri]").val();
+        var sat = $("input[name=hue_sat]").val();
+        var hue = $("input[name=hue_hue]").val();
+        var res = HSVtoRGB(hue, sat, bri);
+        console.log(res);
+//        $("#color").css("background-color","rgb(" + res.r + "," + res.g + "," + res.b + ")");
+    }
+
+
+function HSVtoRGB (h, s, v) {
+  var r, g, b; // 0..255
+
+  while (h < 0) {
+    h += 360;
+  }
+
+  h = h % 360;
+
+  // 特別な場合 saturation = 0
+  if (s == 0) {
+    // → RGB は V に等しい
+    v = Math.round(v);
+    return {'r': v, 'g': v, 'b': v};
+  }
+
+  s = s / 255;
+
+  var i = Math.floor(h / 60) % 6,
+      f = (h / 60) - i,
+      p = v * (1 - s),
+      q = v * (1 - f * s),
+      t = v * (1 - (1 - f) * s)
+
+  switch (i) {
+    case 0 :
+      r = v;  g = t;  b = p;  break;
+    case 1 :
+      r = q;  g = v;  b = p;  break;
+    case 2 :
+      r = p;  g = v;  b = t;  break;
+    case 3 :
+      r = p;  g = q;  b = v;  break;
+    case 4 :
+      r = t;  g = p;  b = v;  break;
+    case 5 :
+      r = v;  g = p;  b = q;  break;
+  }
+
+  return {'r': Math.round(r), 'g': Math.round(g), 'b': Math.round(b)};
+}
+    function setPreset(val){
+        switch(val){
+            case 1: //ベタベタ
+                $("input[name=power]").val([1]);
+                $("input[name=operation_mode]").val([4]);
+                $("input[name=set_temperature]").val(26);
+                $("input[name=fan_speed]").val([3]);
+                $("input[name=fan_direction]").val([4]);
+                break;
+            case 2: //てかてか
+                $("input[name=power]").val([1]);
+                $("input[name=operation_mode]").val([1]);
+                $("input[name=set_temperature]").val(25);
+                $("input[name=fan_speed]").val([3]);
+                $("input[name=fan_direction]").val([7]);
+                break;
+            case 3: //きらきら
+                $("input[name=power]").val([1]);
+                $("input[name=operation_mode]").val([4]);
+                $("input[name=set_temperature]").val(28);
+                $("input[name=fan_speed]").val([1]);
+                $("input[name=fan_direction]").val([1]);
+                break;
+        }
+    }
+
+
+    function btn_send(){
+        var option = {};
+        var value = {};
+        option.iot_id = $("#iot_id").val();
+        switch (option.iot_id){
+            case "1": //エアコン
+                var status = {};
+                status.power = ~~$("input[name=power]").val();
+                status.operation_mode = ~~$("input[name=operation_mode]").val();
+                status.operation_mode = ~~$("input[name=operation_mode]").val();
+                status.set_temperature = ~~$("input[name=set_temperature]").val();
+                status.fan_speed = ~~$("input[name=fan_speed]").val();
+                status.fan_direction = ~~$("input[name=fan_direction]").val();
+                value.id = ~~$("input[name=id]").val();
+                value.status = status;
+                break;
+            case "2": //HUE
+                value.on  = ~~$("input[name=hue_power]").val() ? true : false;
+                value.bri = ~~$("input[name=hue_bri]").val();
+                value.sat = ~~$("input[name=hue_sat]").val();
+                value.hue = ~~$("input[name=hue_hue]").val();
+
+                break;
+        }
+        option.value = value;
+
+        console.log(option);
+        // 通信実行
+        $.ajax({
+            type:"post",                // method = "POST"
+            url:"../iot/iot.php",        // POST送信先のURL
+            data: JSON.stringify(option),  // JSONデータ本体
+            contentType: 'application/json', // リクエストの Content-Type
+            dataType: "json",           // レスポンスをJSONとしてパースする
+            success: function(json_data) {   // 200 OK時
+                console.log(json_data);
+            },
+            error: function() {         // HTTPエラー時
+                console.log("Server Error. Pleasy try again later.");
+            },
+            complete: function() {      // 成功・失敗に関わらず通信が終了した際の処理
+                
+            }
+        });
+    }
+  </script>
+ </body>
+</html>

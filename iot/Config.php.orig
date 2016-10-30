@@ -1,0 +1,7 @@
+<?php
+//DBはPostgres,下記の内容を書き換えてConfig.phpにリネームすること
+define("DBHOST", "");
+define("DBUSER", "");
+define("DBPASS", "");
+define("DBNAME", "");
+?>
